@@ -1,0 +1,347 @@
+#!/bin/bash
+#
+# Script de surveillance des files MQ
+# Ce script permet de se connecter à un serveur MQ et d'extraire le nombre de messages
+# dans chaque file MQ, avec des informations contextuelles sur les applications.
+
+# Configuration
+QMGR=${QMGR:-"ICNC"}  # QManager par défaut si non défini
+
+# Codes couleurs pour améliorer la lisibilité
+ROUGE='\033[0;31m'
+VERT='\033[0;32m'
+JAUNE='\033[0;33m'
+BLEU='\033[0;34m'
+NC='\033[0m' # No Color
+
+# Structure des données pour stocker les informations des files MQ
+declare -A MODE_FILE
+declare -A DOMAINE_FILE
+declare -A CODE_APPLI_FILE
+declare -A TYPE_FILE
+declare -A FILE_ASSOCIEE
+
+# Initialisation des données à partir du tableau fourni
+initialiser_donnees_mq() {
+    # Batch - PREL - 16
+    MODE_FILE["0157.01573751060.BI01"]="Batch"; DOMAINE_FILE["0157.01573751060.BI01"]="PREL"; CODE_APPLI_FILE["0157.01573751060.BI01"]="16"; TYPE_FILE["0157.01573751060.BI01"]="Entrée"; FILE_ASSOCIEE["0157.01573751060.BI01"]="0157.0157.751060.BO1"
+    MODE_FILE["0157.0157.751060.BO1"]="Batch"; DOMAINE_FILE["0157.0157.751060.BO1"]="PREL"; CODE_APPLI_FILE["0157.0157.751060.BO1"]="16"; TYPE_FILE["0157.0157.751060.BO1"]="Sortie"; FILE_ASSOCIEE["0157.0157.751060.BO1"]="0157.01573751060.BI01"
+    MODE_FILE["0157.0157.751060.inj"]="Batch"; DOMAINE_FILE["0157.0157.751060.inj"]="PREL"; CODE_APPLI_FILE["0157.0157.751060.inj"]="16"; TYPE_FILE["0157.0157.751060.inj"]="Injection"
+    
+    # Batch - PREL - 28
+    MODE_FILE["0157.01573751060.BI02"]="Batch"; DOMAINE_FILE["0157.01573751060.BI02"]="PREL"; CODE_APPLI_FILE["0157.01573751060.BI02"]="28"; TYPE_FILE["0157.01573751060.BI02"]="Entrée"; FILE_ASSOCIEE["0157.01573751060.BI02"]="0157.0157.751060.BO2"
+    MODE_FILE["0157.0157.751060.BO2"]="Batch"; DOMAINE_FILE["0157.0157.751060.BO2"]="PREL"; CODE_APPLI_FILE["0157.0157.751060.BO2"]="28"; TYPE_FILE["0157.0157.751060.BO2"]="Sortie"; FILE_ASSOCIEE["0157.0157.751060.BO2"]="0157.01573751060.BI02"
+    MODE_FILE["0158.0157.751060.inj"]="Batch"; DOMAINE_FILE["0158.0157.751060.inj"]="PREL"; CODE_APPLI_FILE["0158.0157.751060.inj"]="28"; TYPE_FILE["0158.0157.751060.inj"]="Injection"
+    
+    # Batch - SAFRAN - 10
+    MODE_FILE["0157.01573751060.BI03"]="Batch"; DOMAINE_FILE["0157.01573751060.BI03"]="SAFRAN"; CODE_APPLI_FILE["0157.01573751060.BI03"]="10"; TYPE_FILE["0157.01573751060.BI03"]="Entrée"; FILE_ASSOCIEE["0157.01573751060.BI03"]="0157.0157.751060.BO3"
+    MODE_FILE["0157.0157.751060.BO3"]="Batch"; DOMAINE_FILE["0157.0157.751060.BO3"]="SAFRAN"; CODE_APPLI_FILE["0157.0157.751060.BO3"]="10"; TYPE_FILE["0157.0157.751060.BO3"]="Sortie"; FILE_ASSOCIEE["0157.0157.751060.BO3"]="0157.01573751060.BI03"
+    MODE_FILE["0159.0157.751060.inj"]="Batch"; DOMAINE_FILE["0159.0157.751060.inj"]="SAFRAN"; CODE_APPLI_FILE["0159.0157.751060.inj"]="10"; TYPE_FILE["0159.0157.751060.inj"]="Injection"
+    
+    # Batch - TFI - 6
+    MODE_FILE["0157.01573751060.BI04"]="Batch"; DOMAINE_FILE["0157.01573751060.BI04"]="TFI"; CODE_APPLI_FILE["0157.01573751060.BI04"]="6"; TYPE_FILE["0157.01573751060.BI04"]="Entrée"; FILE_ASSOCIEE["0157.01573751060.BI04"]="0157.0157.751060.BO4"
+    MODE_FILE["0157.0157.751060.BO4"]="Batch"; DOMAINE_FILE["0157.0157.751060.BO4"]="TFI"; CODE_APPLI_FILE["0157.0157.751060.BO4"]="6"; TYPE_FILE["0157.0157.751060.BO4"]="Sortie"; FILE_ASSOCIEE["0157.0157.751060.BO4"]="0157.01573751060.BI04"
+    MODE_FILE["0160.0157.751060.inj"]="Batch"; DOMAINE_FILE["0160.0157.751060.inj"]="TFI"; CODE_APPLI_FILE["0160.0157.751060.inj"]="6"; TYPE_FILE["0160.0157.751060.inj"]="Injection"
+    
+    # TP - Matisse IP - 37
+    MODE_FILE["0157.01573751060.TPI"]="TP"; DOMAINE_FILE["0157.01573751060.TPI"]="Matisse IP"; CODE_APPLI_FILE["0157.01573751060.TPI"]="37"; TYPE_FILE["0157.01573751060.TPI"]="Entrée"; FILE_ASSOCIEE["0157.01573751060.TPI"]="0157.0157.751060.TPO"
+    MODE_FILE["0157.0157.751060.TPO"]="TP"; DOMAINE_FILE["0157.0157.751060.TPO"]="Matisse IP"; CODE_APPLI_FILE["0157.0157.751060.TPO"]="37"; TYPE_FILE["0157.0157.751060.TPO"]="Sortie"; FILE_ASSOCIEE["0157.0157.751060.TPO"]="0157.01573751060.TPI"
+    MODE_FILE["0161.0157.751060.inj"]="TP"; DOMAINE_FILE["0161.0157.751060.inj"]="Matisse IP"; CODE_APPLI_FILE["0161.0157.751060.inj"]="37"; TYPE_FILE["0161.0157.751060.inj"]="Injection"
+    
+    # TP - TFI - 8
+    MODE_FILE["0158.01573751060.TPI"]="TP"; DOMAINE_FILE["0158.01573751060.TPI"]="TFI"; CODE_APPLI_FILE["0158.01573751060.TPI"]="8"; TYPE_FILE["0158.01573751060.TPI"]="Entrée"; FILE_ASSOCIEE["0158.01573751060.TPI"]="0158.0157.751060.TPO"
+    MODE_FILE["0158.0157.751060.TPO"]="TP"; DOMAINE_FILE["0158.0157.751060.TPO"]="TFI"; CODE_APPLI_FILE["0158.0157.751060.TPO"]="8"; TYPE_FILE["0158.0157.751060.TPO"]="Sortie"; FILE_ASSOCIEE["0158.0157.751060.TPO"]="0158.01573751060.TPI"
+    MODE_FILE["0162.0157.751060.inj"]="TP"; DOMAINE_FILE["0162.0157.751060.inj"]="TFI"; CODE_APPLI_FILE["0162.0157.751060.inj"]="8"; TYPE_FILE["0162.0157.751060.inj"]="Injection"
+    
+    # TP - Esyness - 53
+    MODE_FILE["0159.01573751060.TPI"]="TP"; DOMAINE_FILE["0159.01573751060.TPI"]="Esyness"; CODE_APPLI_FILE["0159.01573751060.TPI"]="53"; TYPE_FILE["0159.01573751060.TPI"]="Entrée"; FILE_ASSOCIEE["0159.01573751060.TPI"]="0159.0157.751060.TPO"
+    MODE_FILE["0159.0157.751060.TPO"]="TP"; DOMAINE_FILE["0159.0157.751060.TPO"]="Esyness"; CODE_APPLI_FILE["0159.0157.751060.TPO"]="53"; TYPE_FILE["0159.0157.751060.TPO"]="Sortie"; FILE_ASSOCIEE["0159.0157.751060.TPO"]="0159.01573751060.TPI"
+    MODE_FILE["0163.0157.751060.inj"]="TP"; DOMAINE_FILE["0163.0157.751060.inj"]="Esyness"; CODE_APPLI_FILE["0163.0157.751060.inj"]="53"; TYPE_FILE["0163.0157.751060.inj"]="Injection"
+    
+    # TP - LBP - 57
+    MODE_FILE["0160.01573751060.TPI"]="TP"; DOMAINE_FILE["0160.01573751060.TPI"]="LBP"; CODE_APPLI_FILE["0160.01573751060.TPI"]="57"; TYPE_FILE["0160.01573751060.TPI"]="Entrée"; FILE_ASSOCIEE["0160.01573751060.TPI"]="0160.0157.751060.TPO"
+    MODE_FILE["0160.0157.751060.TPO"]="TP"; DOMAINE_FILE["0160.0157.751060.TPO"]="LBP"; CODE_APPLI_FILE["0160.0157.751060.TPO"]="57"; TYPE_FILE["0160.0157.751060.TPO"]="Sortie"; FILE_ASSOCIEE["0160.0157.751060.TPO"]="0160.01573751060.TPI"
+    MODE_FILE["0164.0157.751060.inj"]="TP"; DOMAINE_FILE["0164.0157.751060.inj"]="LBP"; CODE_APPLI_FILE["0164.0157.751060.inj"]="57"; TYPE_FILE["0164.0157.751060.inj"]="Injection"
+}
+
+# Fonction pour afficher l'aide
+afficher_aide() {
+    echo "Usage: $0 [OPTIONS]"
+    echo "Surveille les files MQ et affiche le nombre de messages."
+    echo ""
+    echo "Options:"
+    echo "  -h, --help           Affiche cette aide"
+    echo "  -q, --qmanager NOM   Spécifie le nom du QManager (défaut: $QMGR)"
+    echo "  -m, --mode MODE      Filtre par mode (Batch/TP)"
+    echo "  -d, --domaine DOM    Filtre par domaine"
+    echo "  -a, --appli CODE     Filtre par code application"
+    echo "  -n, --non-vide       Affiche uniquement les files non vides"
+    echo "  -v, --verbose        Mode verbeux (affiche toutes les informations)"
+    echo "  -i, --injection      Inclut les files d'injection dans l'analyse"
+    echo "  -w, --watch SEC      Mode surveillance continue (rafraîchissement toutes les SEC secondes)"
+    echo "  -t, --seuil NUM      Signale les files dépassant ce seuil de messages"
+}
+
+# Traitement des arguments
+MODE_FILTRE=""
+DOMAINE_FILTRE=""
+APPLI_FILTRE=""
+NON_VIDE=0
+VERBOSE=0
+INCLURE_INJECTION=0
+MODE_SURVEILLANCE=0
+INTERVALLE_RAFRAICHISSEMENT=10
+SEUIL_ALERTE=100
+
+# Traitement des arguments potentiels
+while [ "$1" != "" ]; do
+    case $1 in
+        -h | --help )           afficher_aide
+                                exit
+                                ;;
+        -q | --qmanager )       shift
+                                QMGR=$1
+                                ;;
+        -m | --mode )           shift
+                                MODE_FILTRE=$1
+                                ;;
+        -d | --domaine )        shift
+                                DOMAINE_FILTRE=$1
+                                ;;
+        -a | --appli )          shift
+                                APPLI_FILTRE=$1
+                                ;;
+        -n | --non-vide )       NON_VIDE=1
+                                ;;
+        -v | --verbose )        VERBOSE=1
+                                ;;
+        -i | --injection )      INCLURE_INJECTION=1
+                                ;;
+        -w | --watch )          MODE_SURVEILLANCE=1
+                                shift
+                                if [[ "$1" =~ ^[0-9]+$ ]]; then
+                                    INTERVALLE_RAFRAICHISSEMENT=$1
+                                fi
+                                ;;
+        -t | --seuil )          shift
+                                if [[ "$1" =~ ^[0-9]+$ ]]; then
+                                    SEUIL_ALERTE=$1
+                                fi
+                                ;;
+        * )                     echo "Option inconnue: $1"
+                                afficher_aide
+                                exit 1
+    esac
+    shift
+done
+
+# Initialiser les données MQ
+initialiser_donnees_mq
+
+# Construire la liste complète des files MQ à surveiller (entrée, sortie et injection)
+LIST_Q="0157.01573751060.BI01 0157.01573751060.BI02 0157.01573751060.BI03 0157.01573751060.BI04 
+        0157.0157.751060.BO1 0157.0157.751060.BO2 0157.0157.751060.BO3 0157.0157.751060.BO4 
+        0157.01573751060.TPI 0157.0157.751060.TPO 
+        0158.01573751060.TPI 0158.0157.751060.TPO 
+        0159.01573751060.TPI 0159.0157.751060.TPO 
+        0160.01573751060.TPI 0160.0157.751060.TPO"
+
+# Ajouter les files d'injection si l'option est activée
+if [ $INCLURE_INJECTION -eq 1 ]; then
+    LIST_Q="$LIST_Q 0157.0157.751060.inj 0158.0157.751060.inj 0159.0157.751060.inj 0160.0157.751060.inj 
+            0161.0157.751060.inj 0162.0157.751060.inj 0163.0157.751060.inj 0164.0157.751060.inj"
+fi
+
+# Fonction pour vérifier si la file MQ correspond aux filtres
+verifier_filtres() {
+    local queue=$1
+    
+    # Vérifier le filtre de mode
+    if [ -n "$MODE_FILTRE" ] && [ "${MODE_FILE[$queue]}" != "$MODE_FILTRE" ]; then
+        return 1
+    fi
+    
+    # Vérifier le filtre de domaine
+    if [ -n "$DOMAINE_FILTRE" ] && [ "${DOMAINE_FILE[$queue]}" != "$DOMAINE_FILTRE" ]; then
+        return 1
+    fi
+    
+    # Vérifier le filtre d'application
+    if [ -n "$APPLI_FILTRE" ] && [ "${CODE_APPLI_FILE[$queue]}" != "$APPLI_FILTRE" ]; then
+        return 1
+    fi
+    
+    return 0
+}
+
+# Fonction principale de surveillance des files MQ
+surveiller_files() {
+    local timestamp=$(date "+%Y-%m-%d %H:%M:%S")
+    
+    # Initialisation des compteurs
+    local total_files=0
+    local total_msgs=0
+    local files_non_vides=0
+    local max_msgs=0
+    local file_max_msgs=""
+    local alertes_seuil=0
+    
+    # Tableaux pour les statistiques
+    declare -A msgs_par_mode
+    declare -A files_par_mode
+    declare -A msgs_par_domaine
+    declare -A files_par_domaine
+    
+    # Affichage de l'en-tête
+    if [ $MODE_SURVEILLANCE -eq 1 ]; then
+        clear
+    fi
+    
+    echo "============================================================="
+    echo -e "${BLEU}Surveillance des files MQ - QManager: ${QMGR} - ${timestamp}${NC}"
+    echo "============================================================="
+    
+    if [ -n "$MODE_FILTRE" ]; then
+        echo -e "Filtre Mode: ${VERT}$MODE_FILTRE${NC}"
+    fi
+    
+    if [ -n "$DOMAINE_FILTRE" ]; then
+        echo -e "Filtre Domaine: ${VERT}$DOMAINE_FILTRE${NC}"
+    fi
+    
+    if [ -n "$APPLI_FILTRE" ]; then
+        echo -e "Filtre Application: ${VERT}$APPLI_FILTRE${NC}"
+    fi
+    
+    echo "============================================================="
+    
+    if [ $VERBOSE -eq 1 ]; then
+        echo -e "${BLEU}File MQ                  | Msgs | Mode  | Domaine      | App | Type      ${NC}"
+        echo "-------------------------------------------------------------"
+    else
+        echo -e "${BLEU}File MQ                  | Msgs | Mode  | Domaine      | App${NC}"
+        echo "-------------------------------------------------------------"
+    fi
+    
+    # Parcourir chaque file MQ
+    for Q in $LIST_Q; do
+        # Vérifier si la file correspond aux filtres
+        verifier_filtres "$Q"
+        if [ $? -ne 0 ]; then
+            continue
+        fi
+        
+        # Incrémenter le nombre total de files vérifiées
+        ((total_files++))
+        
+        # Récupérer le nombre de messages dans la file
+        NB_MSG=$(mquti __curdepth -q "$Q" 2>/dev/null | grep 'Curdepth Queue' | cut -f2 -d':' | awk '{print $1}')
+        
+        # Vérifier si la commande a réussi
+        if [ $? -ne 0 ] || [ -z "$NB_MSG" ]; then
+            echo -e "${ROUGE}Erreur lors de la lecture de la file $Q${NC}"
+            continue
+        fi
+        
+        # Mettre à jour les statistiques
+        ((total_msgs += NB_MSG))
+        
+        # Mettre à jour les compteurs par mode
+        local mode=${MODE_FILE[$Q]:-"N/A"}
+        ((msgs_par_mode[$mode] += NB_MSG))
+        ((files_par_mode[$mode]++))
+        
+        # Mettre à jour les compteurs par domaine
+        local domaine=${DOMAINE_FILE[$Q]:-"N/A"}
+        ((msgs_par_domaine[$domaine] += NB_MSG))
+        ((files_par_domaine[$domaine]++))
+        
+        # Mettre à jour le maximum
+        if [ "$NB_MSG" -gt "$max_msgs" ]; then
+            max_msgs=$NB_MSG
+            file_max_msgs=$Q
+        fi
+        
+        # Vérifier le seuil d'alerte
+        if [ "$NB_MSG" -ge "$SEUIL_ALERTE" ]; then
+            ((alertes_seuil++))
+        fi
+        
+        # Déterminer la couleur en fonction du nombre de messages
+        local couleur=$NC
+        if [ "$NB_MSG" -ge "$SEUIL_ALERTE" ]; then
+            couleur=$ROUGE
+        elif [ "$NB_MSG" -gt 0 ]; then
+            couleur=$JAUNE
+        fi
+        
+        # Afficher uniquement si la file n'est pas vide ou si NON_VIDE=0
+        if [ "$NB_MSG" -gt 0 ] || [ $NON_VIDE -eq 0 ]; then
+            if [ "$NB_MSG" -gt 0 ]; then
+                ((files_non_vides++))
+            fi
+            
+            if [ $VERBOSE -eq 1 ]; then
+                echo -e "${couleur}$Q | $NB_MSG | ${MODE_FILE[$Q]:-N/A} | ${DOMAINE_FILE[$Q]:-N/A} | ${CODE_APPLI_FILE[$Q]:-N/A} | ${TYPE_FILE[$Q]:-N/A}${NC}"
+            else
+                echo -e "${couleur}$Q | $NB_MSG | ${MODE_FILE[$Q]:-N/A} | ${DOMAINE_FILE[$Q]:-N/A} | ${CODE_APPLI_FILE[$Q]:-N/A}${NC}"
+            fi
+            
+            # Si la file a des messages, vérifier l'état de sa file associée (entrée/sortie)
+            if [ "$NB_MSG" -gt 0 ] && [ -n "${FILE_ASSOCIEE[$Q]}" ]; then
+                local file_associee=${FILE_ASSOCIEE[$Q]}
+                local nb_msg_associee=$(mquti __curdepth -q "$file_associee" 2>/dev/null | grep 'Curdepth Queue' | cut -f2 -d':' | awk '{print $1}')
+                
+                if [ $? -eq 0 ] && [ -n "$nb_msg_associee" ] && [ "$nb_msg_associee" -gt 0 ]; then
+                    echo -e "  ${VERT}→ File associée $file_associee contient également $nb_msg_associee message(s)${NC}"
+                fi
+            fi
+        fi
+    done
+    
+    # Affichage du résumé
+    echo "============================================================="
+    echo -e "${BLEU}Résumé de la surveillance${NC}"
+    echo "============================================================="
+    echo -e "Files MQ vérifiées: ${VERT}$total_files${NC}"
+    echo -e "Files avec messages: ${JAUNE}$files_non_vides${NC}"
+    echo -e "Total des messages: ${JAUNE}$total_msgs${NC}"
+    
+    if [ $alertes_seuil -gt 0 ]; then
+        echo -e "Files dépassant le seuil ($SEUIL_ALERTE): ${ROUGE}$alertes_seuil${NC}"
+    fi
+    
+    if [ $files_non_vides -gt 0 ]; then
+        local moy_msgs=$((total_msgs / files_non_vides))
+        echo -e "Moyenne des messages par file non vide: ${JAUNE}$moy_msgs${NC}"
+    fi
+    
+    if [ $max_msgs -gt 0 ]; then
+        echo -e "File avec le plus de messages: ${ROUGE}$file_max_msgs${NC} ($max_msgs messages)"
+    fi
+    
+    # Affichage des statistiques par mode
+    echo "============================================================="
+    echo -e "${BLEU}Statistiques par mode${NC}"
+    echo "-------------------------------------------------------------"
+    for mode in "${!files_par_mode[@]}"; do
+        echo -e "Mode ${VERT}$mode${NC}: ${files_par_mode[$mode]} files, ${JAUNE}${msgs_par_mode[$mode]}${NC} messages"
+    done
+    
+    # Affichage des statistiques par domaine
+    echo "============================================================="
+    echo -e "${BLEU}Statistiques par domaine${NC}"
+    echo "-------------------------------------------------------------"
+    for domaine in "${!files_par_domaine[@]}"; do
+        echo -e "Domaine ${VERT}$domaine${NC}: ${files_par_domaine[$domaine]} files, ${JAUNE}${msgs_par_domaine[$domaine]}${NC} messages"
+    done
+    
+    # En mode surveillance, afficher une ligne indiquant le prochain rafraîchissement
+    if [ $MODE_SURVEILLANCE -eq 1 ]; then
+        echo "============================================================="
+        echo -e "Prochain rafraîchissement dans ${INTERVALLE_RAFRAICHISSEMENT} secondes... (Ctrl+C pour quitter)"
+    fi
+}
+
+# Exécution principale
+if [ $MODE_SURVEILLANCE -eq 1 ];
