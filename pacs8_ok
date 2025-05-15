@@ -1,0 +1,46 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG20240515-NOHIT</MsgId>
+      <CreDtTm>2025-05-15T15:05:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INST20240515-NOHIT</InstrId>
+        <EndToEndId>E2E20240515-NOHIT</EndToEndId>
+      </PmtId>
+      <Amt>
+        <InstdAmt Ccy="EUR">120.00</InstdAmt>
+      </Amt>
+      <Cdtr>
+        <Nm>Paul Dupuis</Nm>
+        <PstlAdr>
+          <Ctry>FR</Ctry>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789015</IBAN>
+        </Id>
+      </CdtrAcct>
+      <Dbtr>
+        <Nm>Marie Bernard</Nm>
+        <PstlAdr>
+          <Ctry>FR</Ctry>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789016</IBAN>
+        </Id>
+      </DbtrAcct>
+      <RmtInf>
+        <Ustrd>Paiement test - no hit</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>
