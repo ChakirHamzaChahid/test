@@ -1,0 +1,41 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.003.001.08">
+  <FIToFICstmrDrctDbt>
+    <GrpHdr>
+      <MsgId>MSG20240515-002</MsgId>
+      <CreDtTm>2025-05-15T14:35:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <DrctDbtTxInf>
+      <PmtId>
+        <InstrId>INST20240515-002</InstrId>
+        <EndToEndId>E2E20240515-002</EndToEndId>
+      </PmtId>
+      <InstdAmt Ccy="EUR">2500.00</InstdAmt>
+      <Dbtr>
+        <Nm>Ali Mohammed</Nm>
+        <PstlAdr>
+          <Ctry>IR</Ctry>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>IR820540102680020817909002</IBAN>
+        </Id>
+      </DbtrAcct>
+      <Cdtr>
+        <Nm>ACME SARL</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789015</IBAN>
+        </Id>
+      </CdtrAcct>
+      <RmtInf>
+        <Ustrd>Paiement de facture 2025-05</Ustrd>
+      </RmtInf>
+    </DrctDbtTxInf>
+  </FIToFICstmrDrctDbt>
+</Document>
