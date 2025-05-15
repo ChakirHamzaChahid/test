@@ -1,0 +1,45 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.003.001.08">
+  <FIToFICstmrDrctDbt>
+    <GrpHdr>
+      <MsgId>MSG20240515-001</MsgId>
+      <CreDtTm>2025-05-15T14:24:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <DrctDbtTxInf>
+      <PmtId>
+        <InstrId>INST20240515-001</InstrId>
+        <EndToEndId>E2E20240515-001</EndToEndId>
+      </PmtId>
+      <InstdAmt Ccy="EUR">100.00</InstdAmt>
+      <Dbtr>
+        <Nm>Jean Dupont</Nm>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789014</IBAN>
+        </Id>
+      </DbtrAcct>
+      <Cdtr>
+        <Nm>ACME SARL</Nm>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789015</IBAN>
+        </Id>
+      </CdtrAcct>
+      <StsRsnInf>
+        <Orgtr>
+          <Nm>SYSTEM</Nm>
+        </Orgtr>
+        <Rsn>
+          <Cd>WARN</Cd>
+        </Rsn>
+        <AddtlInf>Alerte non bloquante : IBAN formaté avec espaces.</AddtlInf>
+      </StsRsnInf>
+      <TxSts>ACSC</TxSts> <!-- AcceptedSettlementCompleted -->
+    </DrctDbtTxInf>
+  </FIToFICstmrDrctDbt>
+</Document>
