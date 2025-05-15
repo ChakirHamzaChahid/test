@@ -1,0 +1,41 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG20240515-NOFILTER</MsgId>
+      <CreDtTm>2025-05-15T16:30:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INST20240515-NOFILTER</InstrId>
+        <EndToEndId>E2E20240515-NOFILTER</EndToEndId>
+      </PmtId>
+      <Amt>
+        <InstdAmt Ccy="EUR">1000.00</InstdAmt>
+      </Amt>
+      <!-- Champ <Cdtr> manquant -->
+      <CdtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789015</IBAN>
+        </Id>
+      </CdtrAcct>
+      <Dbtr>
+        <Nm>Marie Bernard</Nm>
+        <PstlAdr>
+          <Ctry>FR</Ctry>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789016</IBAN>
+        </Id>
+      </DbtrAcct>
+      <RmtInf>
+        <Ustrd>Paiement test - filtrage non effectué</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>
