@@ -1,0 +1,46 @@
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:pacs.008.001.08">
+  <FIToFICstmrCdtTrf>
+    <GrpHdr>
+      <MsgId>MSG20240515-HIT</MsgId>
+      <CreDtTm>2025-05-15T15:00:00</CreDtTm>
+      <NbOfTxs>1</NbOfTxs>
+      <SttlmInf>
+        <SttlmMtd>CLRG</SttlmMtd>
+      </SttlmInf>
+    </GrpHdr>
+    <CdtTrfTxInf>
+      <PmtId>
+        <InstrId>INST20240515-HIT</InstrId>
+        <EndToEndId>E2E20240515-HIT</EndToEndId>
+      </PmtId>
+      <Amt>
+        <InstdAmt Ccy="USD">5000.00</InstdAmt>
+      </Amt>
+      <Cdtr>
+        <Nm>Ali Mohammed</Nm>
+        <PstlAdr>
+          <Ctry>IR</Ctry>
+        </PstlAdr>
+      </Cdtr>
+      <CdtrAcct>
+        <Id>
+          <IBAN>IR820540102680020817909002</IBAN>
+        </Id>
+      </CdtrAcct>
+      <Dbtr>
+        <Nm>Jean Martin</Nm>
+        <PstlAdr>
+          <Ctry>FR</Ctry>
+        </PstlAdr>
+      </Dbtr>
+      <DbtrAcct>
+        <Id>
+          <IBAN>FR7612345987650123456789014</IBAN>
+        </Id>
+      </DbtrAcct>
+      <RmtInf>
+        <Ustrd>Paiement test - hit sanctions</Ustrd>
+      </RmtInf>
+    </CdtTrfTxInf>
+  </FIToFICstmrCdtTrf>
+</Document>
